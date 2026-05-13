@@ -64,9 +64,9 @@ public class NodeServlet extends HttpServlet {
         HttpSession session = request.getSession(false);
         Student student = (Student) session.getAttribute("student");
 
-        String action          = request.getParameter("action");
+        String action            = request.getParameter("action");
         String enrollmentIdParam = request.getParameter("enrollmentId");
-        int enrollmentId       = Integer.parseInt(enrollmentIdParam);
+        int enrollmentId         = Integer.parseInt(enrollmentIdParam);
 
         try {
             if ("add".equals(action)) {
@@ -84,14 +84,22 @@ public class NodeServlet extends HttpServlet {
                 node.setDescription(description != null ? description.trim() : "");
                 nodeDAO.insert(node);
 
+                // Update total_materials counter
+                int completed = nodeDAO.countCompleted(enrollmentId);
+                int total     = nodeDAO.countTotal(enrollmentId);
+                enrollmentDAO.updateProgress(enrollmentId, completed, total);
+
             } else if ("complete".equals(action)) {
                 String nodeIdParam = request.getParameter("nodeId");
                 int nodeId = Integer.parseInt(nodeIdParam);
 
                 nodeDAO.markComplete(nodeId);
-
-                // Automatically log streak when a node is completed
                 streakDAO.logToday(student.getStudentId());
+
+                // Update nodes_completed counter
+                int completed = nodeDAO.countCompleted(enrollmentId);
+                int total     = nodeDAO.countTotal(enrollmentId);
+                enrollmentDAO.updateProgress(enrollmentId, completed, total);
             }
 
             response.sendRedirect("NodeServlet?enrollmentId=" + enrollmentId);

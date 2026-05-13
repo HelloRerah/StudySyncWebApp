@@ -91,4 +91,19 @@ public class EnrollmentDAO {
         e.setUniversity(rs.getString("university"));
         return e;
     }
+    
+    public void updateProgress(int enrollmentId, int nodesCompleted, int totalMaterials)
+        throws SQLException {
+    String sql = "UPDATE subject_enrollment "
+               + "SET nodes_completed = ?, total_materials = ? "
+               + "WHERE enrollment_id = ?";
+    try (Connection c = DBUtil.getConnection();
+         PreparedStatement ps = c.prepareStatement(sql)) {
+        ps.setInt(1, nodesCompleted);
+        ps.setInt(2, totalMaterials);
+        ps.setInt(3, enrollmentId);
+        ps.executeUpdate();
+    }
+}
+    
 }
